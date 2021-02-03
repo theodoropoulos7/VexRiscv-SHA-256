@@ -30,6 +30,7 @@ class RegFilePlugin(regFileReadyKind : RegFileReadKind,
     val decoderService = pipeline.service(classOf[DecoderService])
     decoderService.addDefault(RS1_USE,False)
     decoderService.addDefault(RS2_USE,False)
+    decoderService.addDefault(RS3_USE,False)
     decoderService.addDefault(REGFILE_WRITE_VALID,False)
   }
 
@@ -81,16 +82,18 @@ class RegFilePlugin(regFileReadyKind : RegFileReadKind,
       def shadowPrefix(that : Bits) = if(withShadow) global.shadow.read ## that else that
       val regFileReadAddress1 = U(shadowPrefix(srcInstruction(clipRange(Riscv.rs1Range))))
       val regFileReadAddress2 = U(shadowPrefix(srcInstruction(clipRange(Riscv.rs2Range))))
+      val regFileReadAddress3 = U(shadowPrefix(srcInstruction(clipRange(Riscv.rs3Range))))
 
-      val (rs1Data,rs2Data) = regFileReadyKind match{
-        case `ASYNC` => (global.regFile.readAsync(regFileReadAddress1),global.regFile.readAsync(regFileReadAddress2))
+      val (rs1Data,rs2Data,rs3Data) = regFileReadyKind match{
+        case `ASYNC` => (global.regFile.readAsync(regFileReadAddress1),global.regFile.readAsync(regFileReadAddress2),global.regFile.readAsync(regFileReadAddress3))
         case `SYNC` =>
           val enable = if(!syncUpdateOnStall) !readStage.arbitration.isStuck else null
-          (global.regFile.readSync(regFileReadAddress1, enable),global.regFile.readSync(regFileReadAddress2, enable))
+          (global.regFile.readSync(regFileReadAddress1, enable),global.regFile.readSync(regFileReadAddress2, enable),global.regFile.readSync(regFileReadAddress3, enable))
       }
 
       insert(RS1) := rs1Data
       insert(RS2) := rs2Data
+      insert(RS3) := rs3Data
     }
 
     //Write register file
