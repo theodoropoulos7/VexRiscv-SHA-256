@@ -120,6 +120,9 @@ object Riscv{
   def FENCE_I            = M"-----------------001-----0001111"
   def SFENCE_VMA         = M"0001001----------000000001110011"
 
+  // needed as in Zkne 0.8.1, rs1 is used to index the output register
+  def AES32ZKNE          = M"--_11--1_-----_-----_000_00000_0110011"
+
   object CSR{
     def MVENDORID = 0xF11 // MRO Vendor ID.
     def MARCHID   = 0xF12 // MRO Architecture ID.
