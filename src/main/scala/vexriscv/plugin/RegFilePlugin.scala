@@ -85,7 +85,7 @@ class RegFilePlugin(regFileReadyKind : RegFileReadKind,
       def shadowPrefix(that : Bits) = if(withShadow) global.shadow.read ## that else that
       val regFileReadAddress1 = U(shadowPrefix(srcInstruction(clipRange(Riscv.rs1Range))))
       val regFileReadAddress2 = U(shadowPrefix(srcInstruction(clipRange(Riscv.rs2Range))))
-      val regFileReadAddress3 = U(shadowPrefix(srcInstruction(clipRange(Riscv.rs3Range))))
+      val regFileReadAddress3 = (srcInstruction(Riscv.opcodeRange) === P_OPCODE) ? U(shadowPrefix(srcInstruction(clipRange(Riscv.rdRange)))) | U(shadowPrefix(srcInstruction(clipRange(Riscv.rs3Range))))
 
       val (rs1Data,rs2Data,rs3Data) = regFileReadyKind match{
         case `ASYNC` => (global.regFile.readAsync(regFileReadAddress1),global.regFile.readAsync(regFileReadAddress2),global.regFile.readAsync(regFileReadAddress3))

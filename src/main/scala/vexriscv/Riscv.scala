@@ -7,6 +7,7 @@ object Riscv{
   def misaToInt(values : String) = values.toLowerCase.map(e => 1 << (e-'a')).reduce(_ | _)
 
   def funct7Range = 31 downto 25
+  def opcodeRange = 6 downto 0
   def rdRange = 11 downto 7
   def funct3Range = 14 downto 12
   def rs1Range = 19 downto 15
@@ -122,6 +123,8 @@ object Riscv{
 
   // needed as in Zkne 0.8.1, rs1 is used to index the output register
   def AES32ZKNE          = M"--_11--1_-----_-----_000_00000_0110011"
+  // needed as P instruction sources RS3 from rdRange
+  def P_OPCODE = B"7'1110111"
 
   object CSR{
     def MVENDORID = 0xF11 // MRO Vendor ID.

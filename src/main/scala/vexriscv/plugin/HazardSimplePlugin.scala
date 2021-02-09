@@ -40,11 +40,12 @@ class HazardSimplePlugin(bypassExecute : Boolean = false,
     def trackHazardWithStage(stage : Stage,bypassable : Boolean, runtimeBypassable : Stageable[Bool]): Unit ={
       val notAES = (AES32ZKNE =/= stage.input(INSTRUCTION).asBits)
       val rdIndex = ((notAES) ? (stage.input(INSTRUCTION)(rdRange)) | (stage.input(INSTRUCTION)(rs1Range)))
+      val regFileReadAddress3 = (readStage.input(INSTRUCTION)(Riscv.opcodeRange) === P_OPCODE) ? readStage.input(INSTRUCTION)(rdRange) | readStage.input(INSTRUCTION)(rs3Range)
 
       val runtimeBypassableValue = if(runtimeBypassable != null) stage.input(runtimeBypassable) else True
       val addr0Match = if(pessimisticAddressMatch) True else rdIndex === readStage.input(INSTRUCTION)(rs1Range)
       val addr1Match = if(pessimisticAddressMatch) True else rdIndex === readStage.input(INSTRUCTION)(rs2Range)
-      val addr2Match = if(pessimisticAddressMatch) True else rdIndex === readStage.input(INSTRUCTION)(rs3Range)
+      val addr2Match = if(pessimisticAddressMatch) True else rdIndex === regFileReadAddress3
       when(stage.arbitration.isValid && stage.input(REGFILE_WRITE_VALID)) {
         if (bypassable) {
           when(runtimeBypassableValue) {
@@ -82,6 +83,7 @@ class HazardSimplePlugin(bypassExecute : Boolean = false,
     }))
     val notAES = (AES32ZKNE =/= stages.last.output(INSTRUCTION).asBits)
     val rdIndex = ((notAES) ? (stages.last.output(INSTRUCTION)(rdRange)) | (stages.last.output(INSTRUCTION)(rs1Range)))
+    val regFileReadAddress3 = (readStage.input(INSTRUCTION)(Riscv.opcodeRange) === P_OPCODE) ? readStage.input(INSTRUCTION)(rdRange) | readStage.input(INSTRUCTION)(rs3Range)
     writeBackWrites.valid := stages.last.output(REGFILE_WRITE_VALID) && stages.last.arbitration.isFiring
     writeBackWrites.address := rdIndex
     writeBackWrites.data := stages.last.output(REGFILE_WRITE_DATA)
@@ -89,7 +91,7 @@ class HazardSimplePlugin(bypassExecute : Boolean = false,
 
     val addr0Match = if(pessimisticAddressMatch) True else writeBackBuffer.address === readStage.input(INSTRUCTION)(rs1Range)
     val addr1Match = if(pessimisticAddressMatch) True else writeBackBuffer.address === readStage.input(INSTRUCTION)(rs2Range)
-    val addr2Match = if(pessimisticAddressMatch) True else writeBackBuffer.address === readStage.input(INSTRUCTION)(rs3Range)
+    val addr2Match = if(pessimisticAddressMatch) True else writeBackBuffer.address === regFileReadAddress3
     when(writeBackBuffer.valid) {
       if (bypassWriteBackBuffer) {
         when(addr0Match) {
