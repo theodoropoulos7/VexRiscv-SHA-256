@@ -39,13 +39,18 @@ class HazardSimplePlugin(bypassExecute : Boolean = false,
 
     def trackHazardWithStage(stage : Stage,bypassable : Boolean, runtimeBypassable : Stageable[Bool]): Unit ={
       val notAES = (AES32ZKNE =/= stage.input(INSTRUCTION).asBits)
+      val isPDouble = (P_DOUBLE === stage.input(INSTRUCTION).asBits)
       val rdIndex = ((notAES) ? (stage.input(INSTRUCTION)(rdRange)) | (stage.input(INSTRUCTION)(rs1Range)))
+      val rdIndexSecond = isPDouble ? (rdIndex ^ B"5'b00001") | B"5'b00000"
       val regFileReadAddress3 = (readStage.input(INSTRUCTION)(Riscv.opcodeRange) === P_OPCODE) ? readStage.input(INSTRUCTION)(rdRange) | readStage.input(INSTRUCTION)(rs3Range)
 
       val runtimeBypassableValue = if(runtimeBypassable != null) stage.input(runtimeBypassable) else True
-      val addr0Match = if(pessimisticAddressMatch) True else rdIndex === readStage.input(INSTRUCTION)(rs1Range)
-      val addr1Match = if(pessimisticAddressMatch) True else rdIndex === readStage.input(INSTRUCTION)(rs2Range)
-      val addr2Match = if(pessimisticAddressMatch) True else rdIndex === regFileReadAddress3
+      val addr0Match = if(pessimisticAddressMatch) True else ((rdIndex =/= B"5'b00000") && (rdIndex === readStage.input(INSTRUCTION)(rs1Range)))
+      val addr1Match = if(pessimisticAddressMatch) True else ((rdIndex =/= B"5'b00000") && (rdIndex === readStage.input(INSTRUCTION)(rs2Range)))
+      val addr2Match = if(pessimisticAddressMatch) True else ((rdIndex =/= B"5'b00000") && (rdIndex === regFileReadAddress3))
+      val addr0MatchSecond = if(pessimisticAddressMatch) True else ((rdIndexSecond =/= B"5'b00000") && (rdIndexSecond === readStage.input(INSTRUCTION)(rs1Range)))
+      val addr1MatchSecond = if(pessimisticAddressMatch) True else ((rdIndexSecond =/= B"5'b00000") && (rdIndexSecond === readStage.input(INSTRUCTION)(rs2Range)))
+      val addr2MatchSecond = if(pessimisticAddressMatch) True else ((rdIndexSecond =/= B"5'b00000") && (rdIndexSecond === regFileReadAddress3))
       when(stage.arbitration.isValid && stage.input(REGFILE_WRITE_VALID)) {
         if (bypassable) {
           when(runtimeBypassableValue) {
@@ -61,15 +66,31 @@ class HazardSimplePlugin(bypassExecute : Boolean = false,
           }
         }
       }
+      when(stage.arbitration.isValid && isPDouble && stage.input(REGFILE_WRITE_VALID_ODD)) {
+        if (bypassable) {
+          when(runtimeBypassableValue) {
+            when(addr0MatchSecond) {
+              readStage.input(RS1) := stage.output(REGFILE_WRITE_DATA_ODD)
+            }
+            when(addr1MatchSecond) {
+              readStage.input(RS2) := stage.output(REGFILE_WRITE_DATA_ODD)
+            }
+            when(addr2MatchSecond) {
+              readStage.input(RS3) := stage.output(REGFILE_WRITE_DATA_ODD)
+            }
+          }
+        }
+      }
+      // REGFILE_WRITE_VALID should be enough, REGFILE_WRITE_VALID_ODD should never be true unless REGFILE_WRITE_VALID is also true
       when(stage.arbitration.isValid && (if(pessimisticWriteRegFile) True else stage.input(REGFILE_WRITE_VALID))) {
         when((Bool(!bypassable) || !runtimeBypassableValue)) {
-          when(addr0Match) {
+          when(addr0Match || addr0MatchSecond) {
             src0Hazard := True
           }
-          when(addr1Match) {
+          when(addr1Match || addr1MatchSecond) {
             src1Hazard := True
           }
-          when(addr2Match) {
+          when(addr2Match || addr2MatchSecond) {
             src2Hazard := True
           }
         }

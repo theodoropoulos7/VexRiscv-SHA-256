@@ -97,6 +97,7 @@ class IntAluPlugin extends Plugin[VexRiscv]{
         AluCtrlEnum.SLT_SLTU -> input(SRC_LESS).asBits(32 bit),
         AluCtrlEnum.ADD_SUB  -> input(SRC_ADD_SUB)
       )
+      insert(REGFILE_WRITE_DATA_ODD) := B"32'x00000000"
     }
   }
 }
