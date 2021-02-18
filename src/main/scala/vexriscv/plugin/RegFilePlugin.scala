@@ -32,6 +32,7 @@ class RegFilePlugin(regFileReadyKind : RegFileReadKind,
     decoderService.addDefault(RS2_USE,False)
     decoderService.addDefault(RS3_USE,False)
     decoderService.addDefault(REGFILE_WRITE_VALID,False)
+    decoderService.addDefault(REGFILE_WRITE_VALID_ODD,False)
   }
 
   override def build(pipeline: VexRiscv): Unit = {
