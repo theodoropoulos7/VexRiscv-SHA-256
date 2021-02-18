@@ -123,6 +123,7 @@ object Riscv{
 
   // needed as in Zkne 0.8.1, rs1 is used to index the output register
   def AES32ZKNE          = M"--_11--1_-----_-----_000_00000_0110011"
+  def SM4ZKS             = M"--_110-0_-----_-----_000_00000_0110011"
   // needed for double-output instructions in P
   def P_DOUBLE           = M"101--0-_-----_-----_000_-----_1110111" // so far covers [US]MULX?[816]
   // needed as P instruction sources RS3 from rdRange

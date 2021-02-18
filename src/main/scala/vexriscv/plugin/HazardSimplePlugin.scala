@@ -38,7 +38,7 @@ class HazardSimplePlugin(bypassExecute : Boolean = false,
     val readStage = service(classOf[RegFileService]).readStage()
 
     def trackHazardWithStage(stage : Stage,bypassable : Boolean, runtimeBypassable : Stageable[Bool]): Unit ={
-      val notAES = (AES32ZKNE =/= stage.input(INSTRUCTION).asBits)
+      val notAES = (AES32ZKNE =/= stage.input(INSTRUCTION).asBits) && (SM4ZKS  =/= stage.input(INSTRUCTION).asBits)
       val isPDouble = (P_DOUBLE === stage.input(INSTRUCTION).asBits)
       val rdIndex = ((notAES) ? (stage.input(INSTRUCTION)(rdRange)) | (stage.input(INSTRUCTION)(rs1Range)))
       val rdIndexSecond = isPDouble ? (rdIndex ^ B"5'b00001") | B"5'b00000"
@@ -102,7 +102,7 @@ class HazardSimplePlugin(bypassExecute : Boolean = false,
       val address = Bits(5 bits)
       val data = Bits(32 bits)
     }))
-    val notAES = (AES32ZKNE =/= stages.last.output(INSTRUCTION).asBits)
+    val notAES = (AES32ZKNE =/= stages.last.output(INSTRUCTION).asBits) && (SM4ZKS =/= stages.last.output(INSTRUCTION).asBits)
     val rdIndex = ((notAES) ? (stages.last.output(INSTRUCTION)(rdRange)) | (stages.last.output(INSTRUCTION)(rs1Range)))
     val regFileReadAddress3 = (readStage.input(INSTRUCTION)(Riscv.opcodeRange) === P_OPCODE) ? readStage.input(INSTRUCTION)(rdRange) | readStage.input(INSTRUCTION)(rs3Range)
     writeBackWrites.valid := stages.last.output(REGFILE_WRITE_VALID) && stages.last.arbitration.isFiring
