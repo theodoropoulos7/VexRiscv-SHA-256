@@ -15,8 +15,9 @@ import spinal.lib.generator.Handle
 import spinal.lib.misc.plic.PlicMapping
 import spinal.lib.system.debugger.SystemDebuggerConfig
 import vexriscv.ip.{DataCacheAck, DataCacheConfig, DataCacheMemBus, InstructionCache, InstructionCacheConfig}
-import vexriscv.plugin.{BranchPlugin, CsrAccess, CsrPlugin, CsrPluginConfig, DBusCachedPlugin, DBusSimplePlugin, DYNAMIC_TARGET, DebugPlugin, DecoderSimplePlugin, FullBarrelShifterPlugin, HazardSimplePlugin, IBusCachedPlugin, IBusSimplePlugin, IntAluPlugin, MmuPlugin, MmuPortConfig, MulDivIterativePlugin, MulPlugin, RegFilePlugin, STATIC, SrcPlugin, StaticMemoryTranslatorPlugin, YamlPlugin}
+import vexriscv.plugin.{BranchPlugin, CsrAccess, CsrPlugin, CsrPluginConfig, DBusCachedPlugin, DBusSimplePlugin, DYNAMIC_TARGET, DebugPlugin, DecoderSimplePlugin, FullBarrelShifterPlugin, HazardSimplePlugin, IBusCachedPlugin, IBusSimplePlugin, IntAluPlugin, MmuPlugin, MmuPortConfig, MulDivIterativePlugin, MulPlugin, RegFileOddEvenPlugin, STATIC, SrcPlugin, StaticMemoryTranslatorPlugin, YamlPlugin}
 import vexriscv.{Riscv, VexRiscv, VexRiscvBmbGenerator, VexRiscvConfig, plugin}
+import vexriscv.plugin._
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -176,7 +177,7 @@ object VexRiscvSmpClusterGen {
         //Uncomment the whole IBusCachedPlugin and comment IBusSimplePlugin if you want cached iBus config
         new IBusCachedPlugin(
           resetVector = resetVector,
-          compressedGen = false,
+          compressedGen = true,
           prediction = vexriscv.plugin.NONE,
           historyRamSizeLog2 = 9,
           relaxPredictorAddress = true,
@@ -262,12 +263,26 @@ object VexRiscvSmpClusterGen {
           mulUnrollFactor = 32,
           divUnrollFactor = 1
         ),
-        new CsrPlugin(CsrPluginConfig.openSbi(mhartid = hartId, misa = Riscv.misaToInt("imas")).copy(utimeAccess = CsrAccess.READ_ONLY)),
+        //new CsrPlugin(CsrPluginConfig.openSbi(mhartid = hartId, misa = Riscv.misaToInt("imas")).copy(utimeAccess = CsrAccess.READ_ONLY)),
+	new CsrPlugin(CsrPluginConfig.openSbi(mhartid = hartId, misa = Riscv.misaToInt("imabks")).copy(utimeAccess = CsrAccess.READ_ONLY, mcycleAccess = CsrAccess.READ_ONLY, ucycleAccess = CsrAccess.READ_ONLY)),
         new BranchPlugin(
           earlyBranch = earlyBranch,
           catchAddressMisaligned = true,
           fenceiGenAsAJump = false
         ),
+	new BitManipZbaPlugin,
+	new BitManipZbbZbpPlugin,
+	new BitManipZbcPlugin(earlyInjection = false),
+	new BitManipBFPOnlyPlugin,
+	new BitManipZbsPlugin,
+	new BitManipZbtPlugin,
+	new CryptoZkndPlugin(earlyInjection = false),
+	new CryptoZknePlugin(earlyInjection = false),
+	new CryptoZknhPlugin,
+	new CryptoZksPlugin(earlyInjection = false),
+//	new PDataProcessPlugin,
+//	new PSlowDataProcessPlugin(earlyInjection = true),
+//	new P64DataProcessPlugin(earlyInjection = true),
         new YamlPlugin(s"cpu$hartId.yaml")
       )
     )
