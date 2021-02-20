@@ -264,25 +264,15 @@ object VexRiscvSmpClusterGen {
           divUnrollFactor = 1
         ),
         //new CsrPlugin(CsrPluginConfig.openSbi(mhartid = hartId, misa = Riscv.misaToInt("imas")).copy(utimeAccess = CsrAccess.READ_ONLY)),
-	new CsrPlugin(CsrPluginConfig.openSbi(mhartid = hartId, misa = Riscv.misaToInt("imabks")).copy(utimeAccess = CsrAccess.READ_ONLY, mcycleAccess = CsrAccess.READ_ONLY, ucycleAccess = CsrAccess.READ_ONLY)),
+	new CsrPlugin(CsrPluginConfig.openSbi(mhartid = hartId, misa = Riscv.misaToInt("imas")).copy(utimeAccess = CsrAccess.READ_ONLY, mcycleAccess = CsrAccess.READ_ONLY, ucycleAccess = CsrAccess.READ_ONLY)),
         new BranchPlugin(
           earlyBranch = earlyBranch,
           catchAddressMisaligned = true,
           fenceiGenAsAJump = false
         ),
-//	new BitManipZbaPlugin,
-//	new BitManipZbbZbpPlugin,
-//	new BitManipZbcPlugin(earlyInjection = false),
-//	new BitManipBFPOnlyPlugin,
-//	new BitManipZbsPlugin,
-//	new BitManipZbtPlugin,
-//	new CryptoZkndPlugin(earlyInjection = false),
-//	new CryptoZknePlugin(earlyInjection = false),
-//	new CryptoZknhPlugin,
-//	new CryptoZksPlugin(earlyInjection = false),
-//        new PackedSIMDBasePlugin,
-//        new PackedSIMDSlowPlugin(earlyInjection = false),
-//        new PackedSIMDWidePlugin(earlyInjection = false),
+//      new PackedSIMDBasePlugin,
+//      new PackedSIMDSlowPlugin(earlyInjection = false),
+//      new PackedSIMDWidePlugin(earlyInjection = false),
         new YamlPlugin(s"cpu$hartId.yaml")
       )
     )
