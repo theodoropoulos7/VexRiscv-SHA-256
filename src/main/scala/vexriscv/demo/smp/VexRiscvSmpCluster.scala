@@ -264,15 +264,12 @@ object VexRiscvSmpClusterGen {
           divUnrollFactor = 1
         ),
         //new CsrPlugin(CsrPluginConfig.openSbi(mhartid = hartId, misa = Riscv.misaToInt("imas")).copy(utimeAccess = CsrAccess.READ_ONLY)),
-	new CsrPlugin(CsrPluginConfig.openSbi(mhartid = hartId, misa = Riscv.misaToInt("imas")).copy(utimeAccess = CsrAccess.READ_ONLY, mcycleAccess = CsrAccess.READ_ONLY, ucycleAccess = CsrAccess.READ_ONLY)),
+	new CsrPlugin(CsrPluginConfig.openSbi(mhartid = hartId, misa = Riscv.misaToInt("imas")).copy(utimeAccess = CsrAccess.READ_ONLY, mcycleAccess = CsrAccess.READ_ONLY, ucycleAccess = CsrAccess.READ_ONLY, minstretAccess = CsrAccess.READ_ONLY, uinstretAccess = CsrAccess.READ_ONLY)),
         new BranchPlugin(
           earlyBranch = earlyBranch,
           catchAddressMisaligned = true,
           fenceiGenAsAJump = false
         ),
-//      new PackedSIMDBasePlugin,
-//      new PackedSIMDSlowPlugin(earlyInjection = false),
-//      new PackedSIMDWidePlugin(earlyInjection = false),
         new YamlPlugin(s"cpu$hartId.yaml")
       )
     )
