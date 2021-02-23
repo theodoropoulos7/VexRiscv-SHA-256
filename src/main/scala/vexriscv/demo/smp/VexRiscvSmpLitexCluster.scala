@@ -8,7 +8,8 @@ import spinal.lib.sim.SparseMemory
 import vexriscv.demo.smp.VexRiscvSmpClusterGen.vexRiscvConfig
 import vexriscv.plugin.{AesPlugin, DBusCachedPlugin}
 import vexriscv.plugin.{CryptoZkndPlugin, CryptoZknePlugin, CryptoZknhPlugin, CryptoZksPlugin}
-import vexriscv.plugin.{BitManipBFPOnlyPlugin, BitManipZbaPlugin, BitManipZbbPlugin, BitManipZbbZbpPlugin, BitManipZbcPlugin, BitManipZbfPlugin, BitManipZbpPlugin, BitManipZbsPlugin, BitManipZbtPlugin}
+import vexriscv.plugin.{BitManipBFPOnlyPlugin, BitManipZbaPlugin, BitManipZbbPlugin, BitManipZbbZbpPlugin, BitManipZbcPlugin, BitManipZbe1cyclePlugin, BitManipZbe2cyclesPlugin, BitManipZbfPlugin, BitManipZbpPlugin, BitManipZbsPlugin, BitManipZbtPlugin}
+import vexriscv.plugin.{PackedSIMDBasePlugin, PackedSIMDSlowPlugin, PackedSIMDWidePlugin}
 
 case class VexRiscvLitexSmpClusterParameter( cluster : VexRiscvSmpClusterParameter,
                                              liteDram : LiteDramNativeParameter,
@@ -116,19 +117,29 @@ object VexRiscvLitexSmpClusterCmdGen extends App {
           coherency = coherency
         )
         if(aesInstruction) c.add(new AesPlugin)
-	if(extensions("Zknd") || extensions("Zkn"))  c.add(new CryptoZkndPlugin(earlyInjection = false))
-	if(extensions("Zkne") || extensions("Zkn"))  c.add(new CryptoZknePlugin(earlyInjection = false))
-	if(extensions("Zknh") || extensions("Zkn"))  c.add(new CryptoZknhPlugin)
+	if(extensions("Zkn")) extensions ++= Set("Zknd", "Zkne", "Zknh")
+	if(extensions("Zknd"))                       c.add(new CryptoZkndPlugin(earlyInjection = false))
+	if(extensions("Zkne"))                       c.add(new CryptoZknePlugin(earlyInjection = false))
+	if(extensions("Zknh"))                       c.add(new CryptoZknhPlugin)
+
 	if(extensions("Zks"))                        c.add(new CryptoZksPlugin(earlyInjection = false))
+
+	if(extensions("B"))   extensions ++= Set("Zba", "Zbb", "Zbc", "Zbe", "Zbf", "Zbp", "Zbs")
 	if(extensions("Zba"))                        c.add(new BitManipZbaPlugin)
 	if(extensions("Zbb") && !extensions("Zbp"))  c.add(new BitManipZbbPlugin)
 	if(extensions("Zbb") && extensions("Zbp"))   c.add(new BitManipZbbZbpPlugin)
 	if(extensions("Zbc"))                        c.add(new BitManipZbcPlugin(earlyInjection = false))
+	if(extensions("Zbe") && !extensions("Zbp") && !extensions("Zbf")) c.add(new BitManipZbe1cyclePlugin)
+	if(extensions("Zbe"))                        c.add(new BitManipZbe2cyclesPlugin(earlyInjection = false))
 	if(extensions("Zbf") && !extensions("Zbp"))  c.add(new BitManipZbfPlugin)
 	if(extensions("Zbf") && extensions("Zbp"))   c.add(new BitManipBFPOnlyPlugin)
 	if(extensions("Zbp") && !extensions("Zbb"))  c.add(new BitManipZbpPlugin)
 	if(extensions("Zbs"))                        c.add(new BitManipZbsPlugin)
 	if(extensions("Zbt"))                        c.add(new BitManipZbtPlugin)
+
+	if(extensions("Pwip"))                       c.add(new PackedSIMDBasePlugin)
+	if(extensions("Pwip"))                       c.add(new PackedSIMDSlowPlugin(earlyInjection = false))
+	if(extensions("Pwip"))                       c.add(new PackedSIMDWidePlugin(earlyInjection = false))
         c
       }},
       withExclusiveAndInvalidation = coherency,
