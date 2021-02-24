@@ -7,7 +7,7 @@ import spinal.lib.bus.wishbone.{WishboneConfig, WishboneToBmbGenerator}
 import spinal.lib.sim.SparseMemory
 import vexriscv.demo.smp.VexRiscvSmpClusterGen.vexRiscvConfig
 import vexriscv.plugin.{AesPlugin, DBusCachedPlugin}
-import vexriscv.plugin.{CryptoZkndPlugin, CryptoZknePlugin, CryptoZknhPlugin, CryptoZksPlugin}
+import vexriscv.plugin.{CryptoZkbPlugin, CryptoZkndPlugin, CryptoZknePlugin, CryptoZknhPlugin, CryptoZksPlugin}
 import vexriscv.plugin.{BitManipBFPOnlyPlugin, BitManipZbaPlugin, BitManipZbbPlugin, BitManipZbbZbpPlugin, BitManipZbcPlugin, BitManipZbe1cyclePlugin, BitManipZbe2cyclesPlugin, BitManipZbfPlugin, BitManipZbpPlugin, BitManipZbsPlugin, BitManipZbtPlugin}
 import vexriscv.plugin.{PackedSIMDBasePlugin, PackedSIMDSlowPlugin, PackedSIMDWidePlugin}
 
@@ -117,6 +117,8 @@ object VexRiscvLitexSmpClusterCmdGen extends App {
           coherency = coherency
         )
         if(aesInstruction) c.add(new AesPlugin)
+	if(extensions("Zkb"))                        c.add(new CryptoZkbPlugin)
+	
 	if(extensions("Zkn")) extensions ++= Set("Zknd", "Zkne", "Zknh")
 	if(extensions("Zknd"))                       c.add(new CryptoZkndPlugin(earlyInjection = false))
 	if(extensions("Zkne"))                       c.add(new CryptoZknePlugin(earlyInjection = false))
