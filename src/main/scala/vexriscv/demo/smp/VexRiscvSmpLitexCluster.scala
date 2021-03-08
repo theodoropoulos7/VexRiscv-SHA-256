@@ -8,7 +8,7 @@ import spinal.lib.sim.SparseMemory
 import vexriscv.demo.smp.VexRiscvSmpClusterGen.vexRiscvConfig
 import vexriscv.plugin.{AesPlugin, DBusCachedPlugin}
 import vexriscv.plugin.{CryptoZkbPlugin, CryptoZkndPlugin, CryptoZknePlugin, CryptoZknhPlugin, CryptoZksPlugin}
-import vexriscv.plugin.{BitManipBFPOnlyPlugin, BitManipZbaPlugin, BitManipZbbPlugin, BitManipZbbZbpPlugin, BitManipZbcPlugin, BitManipZbe1cyclePlugin, BitManipZbe2cyclesPlugin, BitManipZbfPlugin, BitManipZbpPlugin, BitManipZbsPlugin, BitManipZbtPlugin}
+import vexriscv.plugin.{BitManipBFPOnlyPlugin, BitManipZbaPlugin, BitManipZbbPlugin, BitManipZbbZbpPlugin, BitManipZbcPlugin, BitManipZbe1cyclePlugin, BitManipZbe2cyclesPlugin, BitManipZbfPlugin, BitManipZbpPlugin, BitManipZbrPlugin, BitManipZbsPlugin, BitManipZbtPlugin}
 import vexriscv.plugin.{PackedSIMDBasePlugin, PackedSIMDSlowPlugin, PackedSIMDWidePlugin}
 
 case class VexRiscvLitexSmpClusterParameter( cluster : VexRiscvSmpClusterParameter,
@@ -136,6 +136,7 @@ object VexRiscvLitexSmpClusterCmdGen extends App {
 	if(extensions("Zbf") && !extensions("Zbp"))  c.add(new BitManipZbfPlugin)
 	if(extensions("Zbf") && extensions("Zbp"))   c.add(new BitManipBFPOnlyPlugin)
 	if(extensions("Zbp") && !extensions("Zbb"))  c.add(new BitManipZbpPlugin)
+	if(extensions("Zbr"))                        c.add(new BitManipZbrPlugin)
 	if(extensions("Zbs"))                        c.add(new BitManipZbsPlugin)
 	if(extensions("Zbt"))                        c.add(new BitManipZbtPlugin)
 
