@@ -7,10 +7,12 @@ object Riscv{
   def misaToInt(values : String) = values.toLowerCase.map(e => 1 << (e-'a')).reduce(_ | _)
 
   def funct7Range = 31 downto 25
+  def opcodeRange = 6 downto 0
   def rdRange = 11 downto 7
   def funct3Range = 14 downto 12
   def rs1Range = 19 downto 15
   def rs2Range = 24 downto 20
+  def rs3Range = 31 downto 27
   def csrRange = 31 downto 20
 
   case class IMM(instruction  : Bits) extends Area{
@@ -118,6 +120,14 @@ object Riscv{
   def FENCE              = M"-----------------000-----0001111"
   def FENCE_I            = M"-----------------001-----0001111"
   def SFENCE_VMA         = M"0001001----------000000001110011"
+
+  // needed as in Zkne 0.8.1, rs1 is used to index the output register
+  def AES32ZKNE          = M"--_11--1_-----_-----_000_00000_0110011"
+  def SM4ZKS             = M"--_110-0_-----_-----_000_00000_0110011"
+  // needed for double-output instructions in P
+  def P_DOUBLE           = M"101--0-_-----_-----_000_-----_1110111" // so far covers [US]MULX?[816]
+  // needed as P instruction sources RS3 from rdRange
+  def P_OPCODE = B"7'1110111"
 
   object CSR{
     def MVENDORID = 0xF11 // MRO Vendor ID.

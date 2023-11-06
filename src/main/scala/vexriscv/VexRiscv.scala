@@ -36,8 +36,10 @@ case class VexRiscvConfig(){
   object BYPASSABLE_MEMORY_STAGE   extends Stageable(Bool)
   object RS1   extends Stageable(Bits(32 bits))
   object RS2   extends Stageable(Bits(32 bits))
+  object RS3   extends Stageable(Bits(32 bits))
   object RS1_USE extends Stageable(Bool)
   object RS2_USE extends Stageable(Bool)
+  object RS3_USE extends Stageable(Bool)
   object RESULT extends Stageable(UInt(32 bits))
   object PC extends Stageable(UInt(32 bits))
   object PC_CALC_WITHOUT_JUMP extends Stageable(UInt(32 bits))
@@ -46,12 +48,15 @@ case class VexRiscvConfig(){
   object LEGAL_INSTRUCTION extends Stageable(Bool)
   object REGFILE_WRITE_VALID extends Stageable(Bool)
   object REGFILE_WRITE_DATA extends Stageable(Bits(32 bits))
+  object REGFILE_WRITE_VALID_ODD extends Stageable(Bool)
+  object REGFILE_WRITE_DATA_ODD extends Stageable(Bits(32 bits))
 
   object MPP extends PipelineThing[UInt]
   object DEBUG_BYPASS_CACHE extends PipelineThing[Bool]
 
   object SRC1   extends Stageable(Bits(32 bits))
   object SRC2   extends Stageable(Bits(32 bits))
+  object SRC3   extends Stageable(Bits(32 bits))
   object SRC_ADD_SUB extends Stageable(Bits(32 bits))
   object SRC_ADD extends Stageable(Bits(32 bits))
   object SRC_SUB extends Stageable(Bits(32 bits))
@@ -81,8 +86,13 @@ case class VexRiscvConfig(){
   object Src2CtrlEnum extends SpinalEnum(binarySequential){
     val RS, IMI, IMS, PC = newElement() //TODO remplacing ZERO could avoid 32 muxes if SRC_ADD can be disabled
   }
+
+  object Src3CtrlEnum extends SpinalEnum(binarySequential){
+    val RS, IMI = newElement()
+  }
   object SRC1_CTRL  extends Stageable(Src1CtrlEnum())
   object SRC2_CTRL  extends Stageable(Src2CtrlEnum())
+  object SRC3_CTRL  extends Stageable(Src3CtrlEnum())
 }
 
 

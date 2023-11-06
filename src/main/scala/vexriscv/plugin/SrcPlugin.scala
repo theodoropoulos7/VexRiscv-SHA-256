@@ -39,6 +39,10 @@ class SrcPlugin(separatedAddSub : Boolean = false, executeInsertion : Boolean = 
         Src2CtrlEnum.IMS -> imm.s_sext.resized,
         Src2CtrlEnum.PC -> output(PC).asBits
       )
+      insert(SRC3) := input(SRC3_CTRL).mux(
+        Src3CtrlEnum.RS -> output(RS3),
+        Src3CtrlEnum.IMI -> imm.i_sext.resized
+      )
     }
 
     val addSubStage = if(decodeAddSub) decode else execute

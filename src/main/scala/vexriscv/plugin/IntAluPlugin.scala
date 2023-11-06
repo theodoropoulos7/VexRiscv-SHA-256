@@ -25,6 +25,7 @@ class IntAluPlugin extends Plugin[VexRiscv]{
     val immediateActions = List[(Stageable[_ <: BaseType],Any)](
       SRC1_CTRL                -> Src1CtrlEnum.RS,
       SRC2_CTRL                -> Src2CtrlEnum.IMI,
+      SRC3_CTRL                -> Src3CtrlEnum.RS,
       REGFILE_WRITE_VALID      -> True,
       BYPASSABLE_EXECUTE_STAGE -> True,
       BYPASSABLE_MEMORY_STAGE  -> True,
@@ -34,6 +35,7 @@ class IntAluPlugin extends Plugin[VexRiscv]{
     val nonImmediateActions = List[(Stageable[_ <: BaseType],Any)](
       SRC1_CTRL                -> Src1CtrlEnum.RS,
       SRC2_CTRL                -> Src2CtrlEnum.RS,
+      SRC3_CTRL                -> Src3CtrlEnum.RS,
       REGFILE_WRITE_VALID      -> True,
       BYPASSABLE_EXECUTE_STAGE -> True,
       BYPASSABLE_MEMORY_STAGE  -> True,
@@ -95,6 +97,7 @@ class IntAluPlugin extends Plugin[VexRiscv]{
         AluCtrlEnum.SLT_SLTU -> input(SRC_LESS).asBits(32 bit),
         AluCtrlEnum.ADD_SUB  -> input(SRC_ADD_SUB)
       )
+      insert(REGFILE_WRITE_DATA_ODD) := B"32'x00000000"
     }
   }
 }

@@ -2,7 +2,7 @@ package vexriscv.plugin
 
 import spinal.core._
 import spinal.lib._
-import vexriscv.{DecoderService, Stageable, VexRiscv}
+import vexriscv.{DecoderService, Stageable, VexRiscv, Riscv}
 
 /**
   * The AesPlugin allow to reduce the instruction count of each AES round by providing the following instruction :
@@ -41,16 +41,7 @@ import vexriscv.{DecoderService, Stageable, VexRiscv}
   * 3) Permute the rom read data depending the instruction and the 'sel' argument
   * 4) Xor the result with RS1 and return that as instruction result
   *
-  * The instructions are encoded by default as following :
-  * --SS-LDXXXXXYYYYY000ZZZZZ0001011
-  *
-  * Where :
-  * - XXXXX is the register file source 2 (RS2)
-  * - YYYYY is the register file source 1 (RS1)
-  * - ZZZZZ is the register file destination
-  * - D=1 mean decrypt, D=0 mean encrypt
-  * - L=1 mean last round, L=0 mean full round
-  * - SS specify which byte should be used from RS2 for the processing
+  * The instructions are encoded as in Zkn[de] from Krypto 0.8.1
   *
   * In practice the aes-256-cbc performances should improve by a factor 4. See the following results from libopenssl
   * from a SoC running linux at 100 Mhz
@@ -59,15 +50,16 @@ import vexriscv.{DecoderService, Stageable, VexRiscv}
   *   aes-256 cbc HW        1781.52k     2834.07k     3323.07k     3486.72k     3465.22k     3440.10k
   */
 
-case class AesPlugin(encoding : MaskedLiteral = M"-----------------000-----0001011") extends Plugin[VexRiscv]{
+//case class AesPlugin(encoding : MaskedLiteral = M"-----------------000-----0001011") extends Plugin[VexRiscv]{
+  case class AesPlugin(encoding : MaskedLiteral = Riscv.AES32ZKNE) extends Plugin[VexRiscv]{
 
   object IS_AES extends Stageable(Bool)
   object CALC extends Stageable(Bits(32 bits))
 
   val mapping = new {
-    def DECRYPT = 25     // 0/1 =>  encrypt/decrypt
-    def LAST_ROUND = 26
-    def BYTE_SEL = 28    //Which byte should be used in RS2
+    def DECRYPT = 27     // 0/1 =>  encrypt/decrypt
+    def LAST_ROUND = 26  // 0 for last round
+    def BYTE_SEL = 30    //Which byte should be used in RS2
   }
 
   //Callback to setup the plugin and ask for different services
@@ -104,7 +96,7 @@ case class AesPlugin(encoding : MaskedLiteral = M"-----------------000-----00010
     val onExecute = execute plug new Area{
       import execute._
       val byteSel = input(INSTRUCTION)(mapping.BYTE_SEL, 2 bits).asUInt
-      val bankSel = input(INSTRUCTION)(mapping.DECRYPT) && !input(INSTRUCTION)(mapping.LAST_ROUND)
+      val bankSel = input(INSTRUCTION)(mapping.DECRYPT) && input(INSTRUCTION)(mapping.LAST_ROUND)
       val romAddress = U(bankSel ## input(RS2).subdivideIn(8 bits).read(byteSel))
     }
 
@@ -127,7 +119,7 @@ case class AesPlugin(encoding : MaskedLiteral = M"-----------------000-----00010
           VecUInt(3, 3, 3, 3)
         )
 
-        val address = U(input(INSTRUCTION)(mapping.DECRYPT) ## input(INSTRUCTION)(mapping.LAST_ROUND))
+        val address = U(input(INSTRUCTION)(mapping.DECRYPT) ## !input(INSTRUCTION)(mapping.LAST_ROUND))
         val output = remap(address)
       }
       
@@ -143,7 +135,7 @@ case class AesPlugin(encoding : MaskedLiteral = M"-----------------000-----00010
           2 -> remap(1, 0, 3, 2),
           3 -> remap(2, 1, 0, 3)
         )
-        when(input(INSTRUCTION)(mapping.LAST_ROUND)){
+        when(!input(INSTRUCTION)(mapping.LAST_ROUND)){
           zero := B"1111"
           zero(byteSel) := False
         }
